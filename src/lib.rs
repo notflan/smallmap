@@ -1,10 +1,11 @@
 #![feature(const_in_array_repeat_expressions)]
 #![feature(const_fn)]
-#![feature(test)]
+#![cfg_attr(nightly, feature(test))] 
+
 
 #![allow(dead_code)]
 
-extern crate test;
+#[cfg(nightly)] extern crate test;
 
 const MAX: usize = 256;
 
@@ -186,6 +187,24 @@ where K: Collapsible
 	}
 	None
     }
+    
+
+    pub fn remove<Q: ?Sized>(&mut self, key: &Q) -> Option<V>
+    where K: Borrow<Q>,
+	  Q: Collapsible + Eq
+    {
+	for page in self.0.iter_mut()
+	{
+	    let v = page.search_mut(key);
+	    match v {
+		Some((ref ok, _)) if key.eq(ok.borrow()) => {
+		    return v.take().map(|(_, v)| v);
+		},
+		_ => (),
+	    }
+	}
+	None
+    }
 
     pub fn insert(&mut self, key: K, value: V) -> Option<V>
     {
@@ -251,7 +270,7 @@ pub fn collapse<T: AsRef<[u8]>>(bytes: T) -> u8
 mod tests
 {
     use super::*;
-    use test::{Bencher, black_box};
+    #[cfg(nightly)] use test::{Bencher, black_box};
     
     #[test]
     fn it_works()
@@ -276,7 +295,7 @@ mod tests
 	let mut small = Map::new();
 	let mut hash = HashMap::new();
 
-	let input = r#"Bludgeoning clsql and mariadb until they kind of work
+	let input = r#"こんばんわBludgeoning clsql and mariadb until they kind of work
 
 There are no good mysql connectors for Common Lisp, whatever you decide to use, you're not going to have a good time. clsql is pretty much the best we've got, and since I had such a delightful experience configuring it myself, I hope to smooth the process of getting this shitware up and running with my own little blogpost here.
 connecting to a database
@@ -397,6 +416,7 @@ Now the charset for our initial connection should be set to utf8, and we're free
 	assert_eq!(&op1[..], &op2[..]);
     }
 
+    #[cfg(nightly)] 
     #[bench]
     fn char_smallmap(b: &mut Bencher)
     {
@@ -421,7 +441,7 @@ stream"#.chars().collect();
 	    }
 	})
     }
-
+    #[cfg(nightly)] 
     #[bench]
     fn u8_smallmap(b: &mut Bencher)
     {
@@ -439,7 +459,8 @@ stream"#.chars().collect();
     }
 
     use std::collections::HashMap;
-    
+
+    #[cfg(nightly)] 
     #[bench]
     fn char_map(b: &mut Bencher)
     {
@@ -465,6 +486,7 @@ stream"#.chars().collect();
 	})
     }
 
+    #[cfg(nightly)]
     #[bench]
     fn u8_map(b: &mut Bencher)
     {
@@ -480,13 +502,13 @@ stream"#.chars().collect();
 	    }
 	})
     }
-    
+    #[cfg(nightly)] 
     #[bench]
     fn smap_bench(b: &mut Bencher)
     {
 	let mut small = Map::new();
 
-	let input = r#"Bludgeoning clsql and mariadb until they kind of work
+	let input = r#"こんばんわBludgeoning clsql and mariadb until they kind of work
 
 There are no good mysql connectors for Common Lisp, whatever you decide to use, you're not going to have a good time. clsql is pretty much the best we've got, and since I had such a delightful experience configuring it myself, I hope to smooth the process of getting this shitware up and running with my own little blogpost here.
 connecting to a database
@@ -595,12 +617,13 @@ Now the charset for our initial connection should be set to utf8, and we're free
 	    }
 	})
     }
+    #[cfg(nightly)] 
     #[bench]
     fn hmap_bench(b: &mut Bencher)
     {
 	let mut small = HashMap::new();
 
-	let input = r#"Bludgeoning clsql and mariadb until they kind of work
+	let input = r#"こんばんわBludgeoning clsql and mariadb until they kind of work
 
 There are no good mysql connectors for Common Lisp, whatever you decide to use, you're not going to have a good time. clsql is pretty much the best we've got, and since I had such a delightful experience configuring it myself, I hope to smooth the process of getting this shitware up and running with my own little blogpost here.
 connecting to a database
@@ -701,11 +724,8 @@ Now the charset for our initial connection should be set to utf8, and we're free
 	b.iter(|| {
 	    for ch in input.chars()
 	    {
-		if !small.contains_key(&ch) {
-		    small.insert(ch, 0);
-		} else {
-		    *small.get_mut(&ch).unwrap() += 1;
-		}
+		let counter = small.entry(ch).or_insert(0);
+		*counter +=1;
 	    }
 	})
     }
