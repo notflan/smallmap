@@ -12,7 +12,7 @@ fn max_char(chars: &str) -> (char, usize)
 {
     let mut map = Map::new();
     for x in chars.chars() {
-	*map.entry(x).insert_or(0usize) += 1;	
+	*map.entry(x).or_insert(0usize) += 1;	
     }
 
     map.into_iter().max_by_key(|(k, v)| v).unwrap_or_default()
