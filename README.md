@@ -1,13 +1,28 @@
 # smallmap
-A small byte sized table map. (Currently *requires* nightly).
+A small table map using single byte key indecies. Designed for maps with tiny keys.
 
+Pages are stored as 256 entry key-value arrays which are indexed by the byte key index. The key is compared for collision check and on collision the next page is checked or inserted if needed.
+`smallmap` does not ever need to allocate more than 1 page for types which all invariants can be represented as unique bytes.
+## Use cases
 Designed for instances where you want a small map with relatively trivial keys (e.g. primitive type).
-Performance greately outpaces hash-based maps in these cases.
+Performance can greately outpace hash-based by an order of magnitude or more in these cases.
 
+### Maybe use if
+
+* You have small keys
+* Your map is not at risk of Denial of Service attacks.
+* Your keys will have a lot of collisions
+
+### Don't use if
+
+* You have complex keys
+* Denial of service is a concern
+* Your map will contain a large volume of entries
+* Your keys may have a large number of collisions when represented as `u8`.
 
 
 # Benchmarks
-Some rudamentary benchmarks
+Some crude and basic benchmarks
 
 ## char
 
@@ -16,18 +31,19 @@ Some rudamentary benchmarks
 | `HashMap`       | 16      |
 | `smallmap::Map` | 7       |
 
-## Iterating a string's chars and incrementing values
+## Iterating a string's chars and counting each
 
 | Which           | ns/iter |
 |-----------------|---------|
-| `HashMap`       | 65,418  |
-| `smallmap::Map` | 9,416   |
+| `HashMap`       | 8,418   |
+| `BTreeMap`      | 9,742   |
+| `smallmap::Map` | 4,416   |
 
-## u8 (single table)
+## u8
 | Which           | ns/iter |
 |-----------------|---------|
 | `HashMap`       | 15      |
 | `smallmap::Map` | 2       |
 
 # License
- Dunno yet. Maybe MIT haven't decided...
+MIT licensed

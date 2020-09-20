@@ -2,7 +2,6 @@
 use super::*;
 use std::collections::{
     HashMap,
-    BTreeMap,
 };
 
 #[test]
@@ -74,6 +73,7 @@ fn type_primitive()
 mod benchmarks
 {
     use super::*;
+    use std::collections::BTreeMap;
     use test::{Bencher, black_box};
 
     macro_rules! map_bench {

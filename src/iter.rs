@@ -1,6 +1,7 @@
 //! Iterator types for `Map`
 use super::*;
 
+/// An iterator over `Page`s
 pub struct Pages<'a, K, V>(pub(crate) std::slice::Iter<'a, Page<K,V>>);
 
 impl<'a, K, V> Iterator for Pages<'a,K,V>
@@ -16,6 +17,7 @@ impl<'a, K, V> Iterator for Pages<'a,K,V>
     }
 }
 
+/// A mutable iterator over `Page`s
 pub struct PagesMut<'a, K, V>(pub(crate) std::slice::IterMut<'a, Page<K,V>>);
 
 impl<'a, K, V> Iterator for PagesMut<'a,K,V>
@@ -34,6 +36,7 @@ impl<'a, K, V> Iterator for PagesMut<'a,K,V>
 impl<'a, K, V> ExactSizeIterator for PagesMut<'a,K,V>{}
 impl<'a, K, V> std::iter::FusedIterator for PagesMut<'a,K,V>{}
 
+/// An iterator over elements in a `Page`.
 pub struct PageElements<'a, K, V>(pub(crate) std::slice::Iter<'a, Option<(K,V)>>);
 
 impl<'a, K, V> Iterator for PageElements<'a,K,V>
@@ -50,7 +53,7 @@ impl<'a, K, V> Iterator for PageElements<'a,K,V>
 }
 impl<'a, K, V> std::iter::FusedIterator for PageElements<'a,K,V>{}
 
-
+/// A mutable iterator over elements in a `Page`.
 pub struct PageElementsMut<'a, K, V>(pub(crate) std::slice::IterMut<'a, Option<(K,V)>>);
 
 impl<'a, K, V> Iterator for PageElementsMut<'a,K,V>
@@ -67,6 +70,7 @@ impl<'a, K, V> Iterator for PageElementsMut<'a,K,V>
 }
 impl<'a, K, V> std::iter::FusedIterator for PageElementsMut<'a,K,V>{}
 
+/// A consuming iterator over elements in a `Page`.
 pub struct IntoPageElements<K,V>(pub(crate) [Option<(K,V)>; MAX], pub(crate) usize);
 
 impl<K,V> Iterator for IntoPageElements<K,V>
@@ -91,6 +95,7 @@ impl<K,V> Iterator for IntoPageElements<K,V>
 }
 impl<K, V> std::iter::FusedIterator for IntoPageElements<K,V>{}
 
+/// An iterator over entries in a `Map`.
 pub struct Iter<'a, K, V>(pub(crate) Option<PageElements<'a,K,V>>, pub(crate) Pages<'a, K,V>);
 
 impl<'a, K,V> Iterator for Iter<'a, K,V>
@@ -117,7 +122,7 @@ where K: Collapse
 }
 impl<'a, K: Collapse, V> std::iter::FusedIterator for Iter<'a, K,V>{}
 
-
+/// A mutable iterator over entries in a `Map`.
 pub struct IterMut<'a, K, V>(pub(crate) Option<PageElementsMut<'a,K,V>>, pub(crate) PagesMut<'a, K,V>);
 
 impl<'a, K,V> Iterator for IterMut<'a, K,V>
@@ -144,8 +149,7 @@ where K: Collapse
 }
 impl<'a, K: Collapse, V> std::iter::FusedIterator for IterMut<'a, K,V>{}
 
-
-
+/// A consuming iterator over entries in a `Map`.
 pub struct IntoIter<K, V>(pub(crate) Option<IntoPageElements<K,V>>,  pub(crate) std::vec::IntoIter<Page<K,V>>);
 
 impl<K, V> Iterator for IntoIter<K,V>

@@ -14,8 +14,4 @@ macro_rules! collapse {
 }
 
 collapse!(str);
-collapse!(&str);
-collapse!(&mut str);
 collapse!([u8]);
-collapse!(&[u8]);
-collapse!(&mut [u8]);
