@@ -2,20 +2,8 @@
 use super::*;
 
 macro_rules! collapse {
-    (unsafe $type:ty) => {
-	impl Collapsible for $type
-	{
-	    #[inline] fn collapse(&self) -> u8
-	    {
-		collapse(unsafe {
-		    std::slice::from_raw_parts(self as *const Self as *const u8, std::mem::size_of_val::<Self>(self))
-		})
-	    }    
-	}
-    };
-
     (char) => {
-	impl Collapsible for char
+	impl Collapse for char
 	{
 	    #[inline] fn collapse(&self) -> u8
 	    {
@@ -24,7 +12,7 @@ macro_rules! collapse {
 	}
     };
     ($type:ty) => {
-	impl Collapsible for $type
+	impl Collapse for $type
 	{
 	    #[inline] fn collapse(&self) -> u8
 	    {
@@ -35,14 +23,14 @@ macro_rules! collapse {
     };
 }
 
-impl Collapsible for bool
+impl Collapse for bool
 {
     #[inline] fn collapse(&self) -> u8
     {
 	*self as u8
     }    
 }
-impl Collapsible for u8
+impl Collapse for u8
 {
     #[inline] fn collapse(&self) -> u8
     {
@@ -50,14 +38,13 @@ impl Collapsible for u8
     }    
 }
 
-impl Collapsible for i8
+impl Collapse for i8
 {
     #[inline] fn collapse(&self) -> u8
     {
 	*self as u8
     }    
 }
-
 collapse!(char);
 collapse!(u16);
 collapse!(i16);

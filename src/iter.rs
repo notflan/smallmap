@@ -94,7 +94,7 @@ impl<K, V> std::iter::FusedIterator for IntoPageElements<K,V>{}
 pub struct Iter<'a, K, V>(pub(crate) Option<PageElements<'a,K,V>>, pub(crate) Pages<'a, K,V>);
 
 impl<'a, K,V> Iterator for Iter<'a, K,V>
-where K: Collapsible
+where K: Collapse
 {
     type Item = &'a (K,V);
     fn next(&mut self) -> Option<Self::Item> {
@@ -115,13 +115,13 @@ where K: Collapsible
 	(0, self.1.size_hint().1.map(|x| x * MAX))
     }
 }
-impl<'a, K: Collapsible, V> std::iter::FusedIterator for Iter<'a, K,V>{}
+impl<'a, K: Collapse, V> std::iter::FusedIterator for Iter<'a, K,V>{}
 
 
 pub struct IterMut<'a, K, V>(pub(crate) Option<PageElementsMut<'a,K,V>>, pub(crate) PagesMut<'a, K,V>);
 
 impl<'a, K,V> Iterator for IterMut<'a, K,V>
-where K: Collapsible
+where K: Collapse
 {
     type Item = &'a mut (K,V);
     fn next(&mut self) -> Option<Self::Item> {
@@ -142,14 +142,14 @@ where K: Collapsible
 	(0, self.1.size_hint().1.map(|x| x * MAX))
     }
 }
-impl<'a, K: Collapsible, V> std::iter::FusedIterator for IterMut<'a, K,V>{}
+impl<'a, K: Collapse, V> std::iter::FusedIterator for IterMut<'a, K,V>{}
 
 
 
 pub struct IntoIter<K, V>(pub(crate) Option<IntoPageElements<K,V>>,  pub(crate) std::vec::IntoIter<Page<K,V>>);
 
 impl<K, V> Iterator for IntoIter<K,V>
-   where K: Collapsible
+   where K: Collapse
 {
     type Item = (K,V);
     fn next(&mut self) -> Option<Self::Item> {
@@ -172,4 +172,4 @@ impl<K, V> Iterator for IntoIter<K,V>
     }
 }
 
-impl<K: Collapsible, V> std::iter::FusedIterator for IntoIter<K,V>{}
+impl<K: Collapse, V> std::iter::FusedIterator for IntoIter<K,V>{}
