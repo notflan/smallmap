@@ -2,9 +2,9 @@
 name = "smallmap"
 description = "Small byte-sized generic key-value map type"
 keywords = ["map", "table", "small", "key", "value"]
-repository = "https://git.flanchan.moe/flanchan/smallmap"
+repository = "https://github.com/notflan/smallmap"
 homepage= "https://git.flanchan.moe/flanchan/smallmap"
-version = "1.0.1"
+version = "1.0.2"
 authors = ["Avril <flanchan@cumallover.me>"]
 edition = "2018"
 license = "MIT"
