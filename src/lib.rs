@@ -60,25 +60,9 @@ pub trait Collapse: Eq
 
 /// A single page in a `Map`. Contains up to 256 key-value entries.
 #[repr(transparent)]
-#[cfg_attr(nightly, derive(Debug,Clone,PartialEq,Eq,Ord,PartialOrd,Hash))]
 pub struct Page<TKey,TValue>([Option<(TKey, TValue)>; MAX]);
 
-#[cfg(not(nightly))] impl<K: Clone, V: Clone> Clone for Page<K,V>
-{
-    fn clone(&self) -> Self
-    {
-	#[inline(always)] fn copy_slice<T: Clone>(dst: &mut [T], src: &[T])
-	{
-	    for (d, s) in dst.iter_mut().zip(src.iter())
-	    {
-		*d = s.clone()
-	    }
-	}
-	let mut new = init::blank_page();
-	copy_slice(&mut new[..], &self.0[..]);
-	Self(new)
-    }
-}
+mod page_impls;
 
 impl<K,V> Page<K,V>
 where K: Collapse
@@ -158,16 +142,8 @@ where K: Collapse
 }
 
 /// A small hashtable-like map with byte sized key indecies.
-#[cfg_attr(nightly, derive(Debug, Clone, PartialEq, Eq, Hash, Default))]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub struct Map<TKey, TValue>(Vec<Page<TKey,TValue>>);
-
-#[cfg(not(nightly))] impl<K: Clone, V: Clone> Clone for Map<K,V>
-{
-    fn clone(&self) -> Self
-    {
-	Self(self.0.clone())
-    }
-}
 
 impl<K,V> Map<K,V>
 where K: Collapse
