@@ -48,10 +48,10 @@ mod init;
 ///
 /// Implementors should try to minimise collisions by making `collapse` return a relatively unique value if possible.
 /// But it is not required.
-/// Primitive `Eq` types already implement this, as well as `str` and `[u8]`.
+/// It is automatically implemented for types implementing the `Hash` trait.
 /// A simple folding implementation is provided for byte slices here [`collapse_iter()`](collapse_iter).
 ///
-/// Integer types implement this through the modulo of itself over 256, whereas byte slice types implement it through an XOR fold over itself. It doesn't matter though, the programmer is free to implement it how she chooses.
+/// The default implementation has integer types implement this through the modulo of itself over 256, whereas byte slice types implement it through an XOR fold over itself. It doesn't matter though, the programmer is free to implement it how she chooses.
 pub trait Collapse: Eq
 {
     /// Create the index key for this instance. This is similar in use to `Hash::hash()`.
@@ -353,30 +353,63 @@ impl<K: Collapse, V> IntoIterator for Map<K,V>
     }
 }
 
-
-/// Helper trait implementing `Collapse` for types that can be represents as a slice of bytes.
-///
-/// The `collapse` implementation used is a XOR fold over all bytes.
-pub trait CollapseMemory: Eq
-{
-    /// Get the memory representation of this instance to be used to key calculations in `Map`.
-    fn as_memory(&self) -> &[u8];
-}
-impl<T> Collapse for T
-where T: CollapseMemory
+use std::hash::{Hash, Hasher,};
+impl<T: Hash+ Eq> Collapse for T
 {
     fn collapse(&self) -> u8 {
-	collapse(self.as_memory())
+	struct CollapseHasher(u8);
+	macro_rules! hash_type {
+	    
+	    ($nm:ident, u8) => {
+		#[inline(always)] fn $nm(&mut self, i: u8)
+		{
+		    self.0 ^= i;
+		}
+	    };
+	    
+	    ($nm:ident, i8) => {
+		#[inline(always)] fn $nm(&mut self, i: i8)
+		{
+		    self.0 ^= i as u8;
+		}
+	    };
+	    
+	    ($nm:ident, $ty:tt) => {
+		#[inline] fn $nm(&mut self, i: $ty)
+		{
+		    self.0 ^= (i % MAX as $ty) as u8;
+		}
+	    };
+	}
+	impl Hasher for CollapseHasher
+	{
+	    #[inline] fn finish(&self) -> u64
+	    {
+		self.0 as u64
+	    }
+	    #[inline] fn write(&mut self, buffer: &[u8])
+	    {
+		self.0 ^= collapse(buffer);
+	    }
+	    hash_type!(write_u8, u8);
+	    hash_type!(write_i8, i8);
+	    hash_type!(write_i16, i16);
+	    hash_type!(write_u16, u16);
+	    hash_type!(write_i32, i32);
+	    hash_type!(write_u32, u32);
+	    hash_type!(write_i64, i64);
+	    hash_type!(write_u64, u64);
+	    hash_type!(write_u128, u128);
+	    
+	    hash_type!(write_isize, isize);
+	    hash_type!(write_usize, usize);
+	}
+
+	let mut h = CollapseHasher(0);
+	self.hash(&mut h);
+	h.0
     }
 }
-
-
-mod primitives;
-pub use primitives::*;
-
-mod defaults;
-pub use defaults::*;
-
 #[cfg(test)]
 mod tests;
 
