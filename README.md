@@ -47,13 +47,14 @@ Some crude and basic benchmarks
 | `HashMap`       | 16      |
 | `smallmap::Map` | 7       |
 
+
 ## Iterating a string's chars and counting each
 
-| Which           | ns/iter |
-|-----------------|---------|
-| `HashMap`       | 8,418   |
-| `BTreeMap`      | 9,742   |
-| `smallmap::Map` | 4,416   |
+| Which           | ns/iter (entry) | ns/iter (get/insert) |
+|-----------------|-----------------|----------------------|
+| `HashMap`       | 8,418           | 8,367                |
+| `BTreeMap`      | 9,742           | 6,329                |
+| `smallmap::Map` | 4,416           | 1,739                |
 
 ## u8
 | Which           | ns/iter |
