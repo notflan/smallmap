@@ -114,23 +114,15 @@ where K: Collapse
 {
     type Item = &'a (K,V);
     fn next(&mut self) -> Option<Self::Item> {
-	println!("Start loop");
 	loop {
 	    if let Some(ref mut page) = self.0 {
 		if let Some(elem) = page.next() {
-		    println!("!!!!! Get");
 		    return Some(elem);
-		} else {
-		    println!("NO ENTRY IN PAGE");
-		}
-	    } else {
-		println!("NO PAGE");
+		} 
 	    }
 	    if let Some(next_page) = self.1.next() {
-		println!("REPLACE");
 		self.0.replace(next_page.iter());
 	    } else {
-		println!("NONE");
 		return None;
 	    }
 	}
