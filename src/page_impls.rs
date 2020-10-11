@@ -45,3 +45,18 @@ impl<K: hash::Hash, V: hash::Hash> hash::Hash for Page<K,V> {
 	(&self.0[..]).hash(state)
     }
 }
+
+#[cfg(feature="serde")]
+const _: () = {
+    use serde::*;
+    impl<K,V> serde::Serialize for Page<K,V>
+    where K:Serialize, V: Serialize
+    {
+	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+	where
+            S: Serializer,
+	{
+            serializer.serialize_slice(&self.0[..])
+	}
+    }
+};

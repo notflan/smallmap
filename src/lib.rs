@@ -143,6 +143,7 @@ where K: Collapse
 
 /// A small hashtable-like map with byte sized key indecies.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
+#[cfg_attr(feature="serde", derive(serde::Serialize))]
 pub struct Map<TKey, TValue>(Vec<Page<TKey,TValue>>);
 
 impl<K,V> Map<K,V>

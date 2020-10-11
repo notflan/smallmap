@@ -4,12 +4,13 @@ description = "Small byte-sized generic key-value map type"
 keywords = ["map", "table", "small", "key", "value"]
 repository = "https://github.com/notflan/smallmap"
 homepage= "https://git.flanchan.moe/flanchan/smallmap"
-version = "1.1.3"
+version = "1.1.4"
 authors = ["Avril <flanchan@cumallover.me>"]
 edition = "2018"
 license = "MIT"
 
 [dependencies]
+serde = {version = "1.0.116", features = ["derive"], optional = true}
 
 [build-dependencies]
 rustc_version = "0.2"

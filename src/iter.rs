@@ -44,7 +44,13 @@ impl<'a, K, V> Iterator for PageElements<'a,K,V>
     type Item = &'a (K,V);
 
     #[inline] fn next(&mut self) -> Option<Self::Item> {
-	self.0.next().map(Option::as_ref).flatten()
+	//self.0.next().map(Option::as_ref).flatten()
+	while let Some(next) = self.0.next() {
+	    if let Some(next) = next.as_ref() {
+		return Some(next);
+	    }
+	}
+	None
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
@@ -61,7 +67,12 @@ impl<'a, K, V> Iterator for PageElementsMut<'a,K,V>
     type Item = &'a mut (K,V);
 
     #[inline] fn next(&mut self) -> Option<Self::Item> {
-	self.0.next().map(Option::as_mut).flatten()
+	while let Some(next) = self.0.next() {
+	    if let Some(next) = next.as_mut() {
+		return Some(next);
+	    }
+	} 
+	None  
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
@@ -103,15 +114,23 @@ where K: Collapse
 {
     type Item = &'a (K,V);
     fn next(&mut self) -> Option<Self::Item> {
+	println!("Start loop");
 	loop {
 	    if let Some(ref mut page) = self.0 {
 		if let Some(elem) = page.next() {
+		    println!("!!!!! Get");
 		    return Some(elem);
+		} else {
+		    println!("NO ENTRY IN PAGE");
 		}
+	    } else {
+		println!("NO PAGE");
 	    }
 	    if let Some(next_page) = self.1.next() {
+		println!("REPLACE");
 		self.0.replace(next_page.iter());
 	    } else {
+		println!("NONE");
 		return None;
 	    }
 	}
@@ -153,7 +172,7 @@ impl<'a, K: Collapse, V> std::iter::FusedIterator for IterMut<'a, K,V>{}
 pub struct IntoIter<K, V>(pub(crate) Option<IntoPageElements<K,V>>,  pub(crate) std::vec::IntoIter<Page<K,V>>);
 
 impl<K, V> Iterator for IntoIter<K,V>
-   where K: Collapse
+where K: Collapse
 {
     type Item = (K,V);
     fn next(&mut self) -> Option<Self::Item> {
@@ -177,3 +196,44 @@ impl<K, V> Iterator for IntoIter<K,V>
 }
 
 impl<K: Collapse, V> std::iter::FusedIterator for IntoIter<K,V>{}
+
+#[cfg(test)]
+mod tests
+{
+    use crate::*;
+    #[test]
+    fn iter()
+    {
+	let mut map = Map::new();
+	map.insert('<', ());
+	map.insert('>', ());
+	map.insert('|', ());
+
+	let string: String = map.iter().copied().map(|(x, _)| x).collect();
+	assert_eq!("<>|", &string[..])
+    }
+    
+    #[test]
+    fn iter_mut()
+    {
+	let mut map = Map::new();
+	map.insert('<', ());
+	map.insert('>', ());
+	map.insert('|', ());
+
+	let string: String = map.iter_mut().map(|&mut (x, _)| x).collect();
+	assert_eq!("<>|", &string[..])
+    }
+    #[test]
+    fn into_iter()
+    {
+	let mut map = Map::new();
+	map.insert('<', ());
+	map.insert('>', ());
+	map.insert('|', ());
+
+	let string: String = map.into_iter().map(|(x, _)| x).collect();
+	assert_eq!("<>|", &string[..])
+    }
+        
+}
