@@ -5,6 +5,38 @@ use std::collections::{
 };
 
 #[test]
+fn macros()
+{
+    let map1 = smallmap!{
+	{"One" => 1},
+	{"Two" => 2},
+	{"Four" => 40}
+    };
+    let map2 = {
+	let mut map = Map::new();
+	map.insert("One", 1);
+	map.insert("Two", 2);
+	map.insert("Four", 40);
+	map
+    };
+    assert_eq!(map1.len(), 3);
+    assert_eq!(map1,map2);
+}
+
+#[test]
+fn is_empty()
+{
+    let map1 = smallmap!{
+	{"One" => 1},
+	{"Two" => 2},
+	{"Four" => 40}
+    };
+    let map2: Map<(),()> = Map::new();
+    assert!(!map1.is_empty());
+    assert!(map2.is_empty());
+}
+
+#[test]
 fn it_works()
 {
     let mut map = Map::new();

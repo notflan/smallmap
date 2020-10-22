@@ -44,6 +44,43 @@ pub use entry::Entry;
 
 mod init;
 
+/// A helper macro for creating `Map` instances with or without pre-set entries.
+///
+/// # Create empty map
+/// With no parameters this just calls `Map::new()`.
+/// ```
+/// # use smallmap::*;
+/// let map: Map<i32, i32> = smallmap!();
+/// let map2: Map<i32, i32> = Map::new();
+/// assert_eq!(map, map2);
+/// ```
+/// # Create with key-value pairs
+/// You can specify some entries to pre-insert in the format `{key => value}`.
+/// ```
+/// # use smallmap::*;
+/// let map = smallmap! {
+///   {"Key" => 1},
+///   {"Key two" => 2},
+///   {"Key three" => 3},
+///   {"Key four" => 4},
+/// };
+/// ```
+#[macro_export ]macro_rules! smallmap {
+    () => {
+	$crate::Map::new()
+    };
+    ($({$key:expr => $value:expr}),* $(,)?) => {
+	{
+	    let mut map = $crate::Map::new();
+	    $(
+		map.insert($key, $value);
+	    )*
+		map
+	}
+    }
+}
+
+
 /// Trait for types that can be used as `Map` keys.
 ///
 /// Implementors should try to minimise collisions by making `collapse` return a relatively unique value if possible.
@@ -79,7 +116,7 @@ where K: Collapse
     {
 	Self(init::blank_page())
     }
-
+    
     /// The number of entries currently in this page
     ///
     /// This is a count that iterates over all slots, if possible store it in a temporary instead of re-calling it many times.
@@ -143,7 +180,7 @@ where K: Collapse
 
 /// A small hashtable-like map with byte sized key indecies.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
-#[cfg_attr(feature="serde", derive(serde::Serialize))]
+#[cfg_attr(feature="serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Map<TKey, TValue>(Vec<Page<TKey,TValue>>);
 
 impl<K,V> Map<K,V>
@@ -172,6 +209,8 @@ where K: Collapse
 	}
 	None
     }
+
+    /// Get an `Entry` for the `key` that lets you get or insert the value
     pub fn entry(&mut self, key: K) -> Entry<'_, K, V>
     {
 	// somehow this is faster than using index, even though here we search twice????? i don't know why but there you go
@@ -206,6 +245,11 @@ where K: Collapse
     pub fn len(&self) -> usize
     {
 	self.pages().map(Page::len).sum()
+    }
+    /// Is this map empty
+    pub fn is_empty(&self) -> bool
+    {
+	self.0[0].iter().next().is_none()
     }
     /// The number of pages currently in this map
     pub fn num_pages(&self) -> usize
@@ -250,8 +294,13 @@ where K: Collapse
     /// Create a new empty `Map` with a specific number of pages pre-allocated
     pub fn with_capacity(pages: usize) -> Self
     {
+	#[cold] fn cap_too_low() -> !
+	{
+	    panic!("Got 0 capacity, this is invalid.")
+	}
+	
 	if pages == 0 {
-	    panic!("Got 0 capacity, this is invalid.");
+	    cap_too_low()
 	}
 	let mut p = Vec::with_capacity(pages);
 	p.push(Page::new());
@@ -351,6 +400,17 @@ impl<K: Collapse, V> IntoIterator for Map<K,V>
     fn into_iter(self) -> Self::IntoIter
     {
 	IntoIter(None, self.0.into_iter())
+    }
+}
+
+impl<K: Collapse, V> std::iter::Extend<(K,V)> for Map<K,V>
+{
+    fn extend<T: IntoIterator<Item = (K,V)>>(&mut self, iter: T) {
+	// we can probably optimise this better, right?
+	for (key, value) in iter.into_iter()
+	{
+	    self.insert(key,value);
+	}
     }
 }
 
