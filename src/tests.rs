@@ -101,6 +101,26 @@ fn type_primitive()
     test_insert_type!(i128, 0..10000);
 }
 
+#[test]
+fn reverse()
+{
+    let map = smallmap![
+	{"one" => 1},
+	{"two" => 2},
+	{"three" => 3},
+	{"four" => 4},
+    ];
+    let expected = smallmap![
+	{1 => "one"},
+	{2 => "two"},
+	{3 => "three"},
+	{4 => "four"},
+    ];
+
+    assert_eq!(map.reverse(), expected);
+    assert_eq!(expected.reverse().into_iter().map(|(_, v)| v).sum::<i32>(), 4+3+2+1);
+}
+
 #[cfg(nightly)]
 mod benchmarks
 {

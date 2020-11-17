@@ -389,6 +389,20 @@ where K: Collapse
 	self.0.push(page);
 	None
     }
+    
+    /// Consume this `Map` by swapping its keys and values around.
+    pub fn reverse(self) -> Map<V,K>
+    where V: Collapse
+    {
+	let mut output = Map::with_capacity(self.num_pages());
+
+	for (k,v) in self.into_iter()
+	{
+	    output.insert(v, k);
+	}
+
+	output
+    }
 }
 
 impl<K: Collapse, V> IntoIterator for Map<K,V>
