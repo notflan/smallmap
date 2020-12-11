@@ -24,6 +24,14 @@ fn macros()
 }
 
 #[test]
+fn from_iter()
+{
+    let m: Map<usize, ()> = (0..100).zip(std::iter::repeat(())).collect();
+    assert_eq!(m.len(), 100);
+    assert_eq!((0..100).sum::<usize>(), m.into_iter().map(|x| x.0).sum::<usize>());
+}
+
+#[test]
 fn is_empty()
 {
     let map1 = smallmap!{

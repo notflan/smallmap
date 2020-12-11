@@ -154,6 +154,20 @@ where K: Collapse
     }
 }
 
+impl<K: Collapse, V> std::iter::FromIterator<(K, V)> for Map<K,V>
+{
+    fn from_iter<I: IntoIterator<Item=(K, V)>>(iter: I) -> Self
+    {
+	//TODO: Optimise this
+	let mut this = Self::new();
+	for (key, value) in iter.into_iter()
+	{
+	    this.insert(key, value);
+	}
+	this
+    }
+}
+
 impl<K,V> IntoIterator for Page<K,V>
 where K: Collapse
 {
