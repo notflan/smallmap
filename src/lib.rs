@@ -33,8 +33,6 @@
 #![cfg_attr(nightly, feature(never_type))] 
 
 #[cfg(nightly)] extern crate test;
-#[macro_use] extern crate const_fn;
-
 
 const MAX: usize = 256;
 
@@ -45,13 +43,23 @@ use iter::*;
 pub mod entry;
 pub use entry::Entry;
 
+pub mod space;
+
 pub mod primitive;
+pub use primitive::Primitive;
 
 mod init;
 
 mod private {
     pub trait Sealed{}
 }
+
+/// A smallmap set.
+///
+/// Can be used to quickly insert or remove a key only, with no value; and can be used to see if this key is present.
+///
+/// Any map type with a zero-sized value is essentially a set.
+pub type Set<T> = Map<T,()>;
 
 /// A helper macro for creating `Map` instances with or without pre-set entries.
 ///
