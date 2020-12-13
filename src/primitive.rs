@@ -133,3 +133,11 @@ prim!(NonZeroUsize: ^+);
 prim!((): fn {
     0
 });
+
+#[cfg(nightly)] 
+prim!(!: {
+    fn collapse(&self) -> u8
+    {
+	*self
+    }
+});

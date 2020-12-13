@@ -30,6 +30,7 @@
 #![cfg_attr(nightly, feature(test))] 
 #![cfg_attr(nightly, feature(drain_filter))] 
 #![cfg_attr(nightly, feature(const_fn))] 
+#![cfg_attr(nightly, feature(never_type))] 
 
 #[cfg(nightly)] extern crate test;
 #[macro_use] extern crate const_fn;
