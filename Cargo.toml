@@ -10,6 +10,7 @@ edition = "2018"
 license = "MIT"
 
 [dependencies]
+const_fn = "0.4.4"
 serde = {version = "1.0.116", features = ["derive"], optional = true}
 
 [dev-dependencies]

@@ -32,6 +32,8 @@
 #![cfg_attr(nightly, feature(const_fn))] 
 
 #[cfg(nightly)] extern crate test;
+#[macro_use] extern crate const_fn;
+
 
 const MAX: usize = 256;
 
@@ -42,7 +44,13 @@ use iter::*;
 pub mod entry;
 pub use entry::Entry;
 
+pub mod primitive;
+
 mod init;
+
+mod private {
+    pub trait Sealed{}
+}
 
 /// A helper macro for creating `Map` instances with or without pre-set entries.
 ///
