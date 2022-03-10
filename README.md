@@ -27,7 +27,7 @@ Performance can greately outpace hash-based by an order of magnitude or more in 
 
 * You have small keys
 * Your map is not at risk of Denial of Service attacks.
-* Your keys will have a lot of collisions
+* Your keys are not expected to have a lot of collisions when represented as `u8`.
 
 ### Don't use if
 
