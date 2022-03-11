@@ -212,7 +212,20 @@ where K: Collapse
 /// A small hashtable-like map with byte sized key indecies.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
 #[cfg_attr(feature="serde", derive(serde::Serialize, serde::Deserialize))]
+// TODO: Replace with SmallVec<[Page<TKey, TValue>; 1]> maybe?
 pub struct Map<TKey, TValue>(Vec<Page<TKey,TValue>>);
+
+impl<K,V> Map<K,V>
+{
+    /// Returns the currently allocated size of the map in bytes (including currently unused reserved space.)
+    #[inline(always)]
+    #[allow(dead_code)] // Used in test cases, but compiler still warns about it
+    pub(crate) fn internal_size_bytes(&self) -> usize
+    {
+	self.0.capacity() * std::mem::size_of::<Page<K,V>>()
+	//self.0.iter().map(std::mem::size_of_val).sum::<usize>()
+    }
+}
 
 impl<K,V> Map<K,V>
 where K: Collapse
