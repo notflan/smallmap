@@ -5,7 +5,7 @@
 //! * The key must be 8 bits wide and subject to the *null pointer optimisation*
 //! * The value must be a ZST.
 //!
-//! This leaves pretty much only `NonZeroU8` and `NonZeroI8` as entirely space-efficient key candidates.
+//! This leaves pretty much only `std::num::NonZeroU8` and `std::num::NonZeroI8` as entirely space-efficient key candidates.
 //! The restriction on values also means the only entirely space-efficient smallmaps are sets, enable to encode only if a key is present, with no extra information. (See `std::collections::HashSet`).
 use super::*;
 
@@ -13,6 +13,16 @@ use super::*;
 ///
 /// This type is entirely space efficient and will only ever allocate `256` bytes of memory.
 pub type NonZeroByteSet = Set<std::num::NonZeroU8>;
+
+/// A set of non-zero signed 8-bit integers.
+///
+/// This type is entirely space efficient and will only ever allocate `256` bytes of memory.
+pub type NonZeroI8Set = Set<std::num::NonZeroI8>;
+
+/// A set of non-zero unsigned 8-bit integers.
+///
+/// This type is entirely space efficient and will only ever allocate `256` bytes of memory.
+pub type NonZeroU8Set = NonZeroByteSet;
 
 #[cfg(test)]
 mod tests
@@ -54,5 +64,7 @@ mod tests
 	}
 
 	size_test!(non_zero_byte_set, NonZeroByteSet, 256);
+	size_test!(non_zero_u8_set, NonZeroU8Set, 256);
+	size_test!(non_zero_i8_set, NonZeroI8Set, 256);
     }
 }
