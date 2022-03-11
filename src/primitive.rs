@@ -1,4 +1,4 @@
-//! Contains `Collapse` impls for primitive types through a newtime shim.
+//! Contains `Collapse` impls for primitive types through a newtype shim.
 //!
 //! # Why
 //! Such wrappers are a workaround for the lack of template specialisation available in Rust so far, as the generic `impl<T: Hash> Collapse<T> for T` still requires computing the hash of the internal types before reducing to the `u8` page index.

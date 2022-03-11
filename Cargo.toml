@@ -9,8 +9,20 @@ authors = ["Avril <flanchan@cumallover.me>"]
 edition = "2018"
 license = "MIT"
 
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "unwind"
+strip=true
+
+[features]
+# TODO: maybe add an FFI feature, to allow C projects to use it? idk if that's worth it really...
+
 [dependencies]
 serde = {version = "1.0.116", features = ["derive"], optional = true}
+# TODO: optional smallvec feature: instead of heap-allocating the first page, it can be placed on the stack.
+
 
 [dev-dependencies]
 serde_json = "1.0.59"
