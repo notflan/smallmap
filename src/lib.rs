@@ -29,7 +29,6 @@
 
 #![cfg_attr(nightly, feature(test))] 
 #![cfg_attr(nightly, feature(drain_filter))] 
-#![cfg_attr(nightly, feature(const_fn_trait_bound))] 
 #![cfg_attr(nightly, feature(never_type))] 
 
 #[cfg(nightly)] extern crate test;
@@ -451,6 +450,7 @@ where K: Collapse
 
 impl<K: Collapse, V> Default for Map<K,V>
 {
+    #[inline]
     fn default() -> Self
     {
         Self::new()
