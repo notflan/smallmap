@@ -210,7 +210,7 @@ where K: Collapse
 }
 
 /// A small hashtable-like map with byte sized key indecies.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature="serde", derive(serde::Serialize, serde::Deserialize))]
 // TODO: Replace with `SmallVec<[Page<TKey, TValue>; 1]>` when feature that adds `smallvec` is enabled (this will allocate the first page on the stack, and the rest on the heap.
 pub struct Map<TKey, TValue>(Vec<Page<TKey,TValue>>);
@@ -446,6 +446,14 @@ where K: Collapse
 	}
 
 	output
+    }
+}
+
+impl<K: Collapse, V> Default for Map<K,V>
+{
+    fn default() -> Self
+    {
+        Self::new()
     }
 }
 
