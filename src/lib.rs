@@ -322,6 +322,21 @@ where K: Collapse
 	Iter(None, self.pages())
     }
 
+	/// An iterator over all the keys in the map
+	pub fn keys(&self) -> impl Iterator<Item = &K> {
+		self.iter().map(|(k, _)| k)
+	}
+
+	/// An iterator over all the values in the map
+	pub fn values(&self) -> impl Iterator<Item = &V> {
+		self.iter().map(|(_, v)| v)
+	}
+
+	/// A mutable iterator over all the values in the map
+	pub fn values_mut(&mut self) -> impl Iterator<Item = &mut V> {
+		self.iter_mut().map(|(_, v)| v)
+	}
+
     /// A mutable iterator over all elements in the map
     pub fn iter_mut(&mut self) -> IterMut<'_, K, V>
     {
@@ -481,7 +496,9 @@ impl<K: Collapse, V> std::iter::Extend<(K,V)> for Map<K,V>
 }
 
 use std::hash::{Hash, Hasher,};
-impl<T: Hash+ Eq> Collapse for T
+use std::ops::{Index, IndexMut};
+
+impl<T: ?Sized + Hash + Eq> Collapse for T
 {
     fn collapse(&self) -> u8 {
 	struct CollapseHasher(u8);
@@ -537,6 +554,29 @@ impl<T: Hash+ Eq> Collapse for T
 	h.0
     }
 }
+
+impl<K, Q, V> Index<&Q> for Map<K, V>
+	where
+		K: Collapse + Borrow<Q>,
+		Q: ?Sized + Collapse + Eq,
+{
+	type Output = V;
+
+	fn index(&self, key: &Q) -> &Self::Output {
+		self.get(key).expect("Key not found")
+	}
+}
+
+impl<K, Q, V> IndexMut<&Q> for Map<K, V>
+	where
+		K: Collapse + Borrow<Q>,
+		Q: ?Sized + Collapse + Eq,
+{
+	fn index_mut(&mut self, key: &Q) -> &mut Self::Output {
+		self.get_mut(key).expect("Key not found")
+	}
+}
+
 #[cfg(test)]
 mod tests;
 

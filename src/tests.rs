@@ -129,6 +129,68 @@ fn reverse()
     assert_eq!(expected.reverse().into_iter().map(|(_, v)| v).sum::<i32>(), 4+3+2+1);
 }
 
+#[test]
+fn index_index_mut() {
+    let mut map = smallmap![
+        {"one" => 1},
+	    {"two" => 2},
+    ];
+    assert_eq!(1, map["one"]);
+    map["two"] = 3;
+    assert_eq!(3, map["two"]);
+}
+
+#[test]
+fn get_keys() {
+    let map = smallmap![
+	{"one" => 1},
+	{"two" => 2},
+	{"three" => 3},
+	{"four" => 4},
+    ];
+    let keys = map.keys();
+    let expect_sum = 10;
+    let mut got_sum = 0;
+    for key in keys {
+        got_sum += map[key];
+    }
+    assert_eq!(expect_sum, got_sum);
+}
+
+#[test]
+fn get_values() {
+    let map = smallmap![
+	{"one" => 1},
+	{"two" => 2},
+	{"three" => 3},
+	{"four" => 4},
+    ];
+    let values = map.values();
+    let expect_sum = 10;
+    let mut got_sum = 0;
+    for val in values {
+        got_sum += val;
+    }
+    assert_eq!(expect_sum, got_sum);
+}
+
+#[test]
+fn get_values_mut() {
+    let mut map = smallmap![
+	{"one" => 1},
+	{"two" => 2},
+	{"three" => 3},
+	{"four" => 4},
+    ];
+    let values = map.values_mut();
+    let expect_sum = 20;
+    for val in values {
+        *val *= 2;
+    }
+    let got_sum = map.values().sum::<i32>();
+    assert_eq!(expect_sum, got_sum);
+}
+
 #[cfg(nightly)]
 mod benchmarks
 {
