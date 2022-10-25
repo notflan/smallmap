@@ -1,6 +1,6 @@
 //! Because we can't #derive big arrays on stable smh
 use super::*;
-use std::{
+use core::{
     fmt::{self, Debug,},
     hash,
 };

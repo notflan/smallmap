@@ -26,16 +26,19 @@
 //!
 //! ###  When not to use
 //! Generally don't use this if your key would have a lot of collisions being represents in 8 bits, otherwise it might be a faster alternative to hash-based maps. You should check yourself before sticking with this crate instead of `std`'s vectorised map implementations.
-
+#![cfg_attr(not(test), no_std)]
 #![cfg_attr(nightly, feature(test))] 
 #![cfg_attr(nightly, feature(drain_filter))] 
 #![cfg_attr(nightly, feature(never_type))] 
 
 #[cfg(nightly)] extern crate test;
+extern crate alloc;
 
 const MAX: usize = 256;
 
-use std::borrow::Borrow;
+use alloc::vec;
+use alloc::vec::Vec;
+use core::borrow::Borrow;
 
 pub mod iter;
 use iter::*;
@@ -138,7 +141,7 @@ where K: Collapse
     /// This is a count that iterates over all slots, if possible store it in a temporary instead of re-calling it many times.
     pub fn len(&self) -> usize
     {
-	self.0.iter().map(Option::as_ref).filter_map(std::convert::identity).count()
+	self.0.iter().map(Option::as_ref).filter_map(core::convert::identity).count()
     }
 
     /// An iterator over all entries currently in this page
@@ -166,11 +169,11 @@ where K: Collapse
 
     fn replace(&mut self, k: K, v: V) -> Option<(K,V)>
     {
-	std::mem::replace(&mut self.0[usize::from(k.collapse())], Some((k,v)))
+	core::mem::replace(&mut self.0[usize::from(k.collapse())], Some((k,v)))
     }
 }
 
-impl<K: Collapse, V> std::iter::FromIterator<(K, V)> for Map<K,V>
+impl<K: Collapse, V> core::iter::FromIterator<(K, V)> for Map<K,V>
 {
     fn from_iter<I: IntoIterator<Item=(K, V)>>(iter: I) -> Self
     {
@@ -221,8 +224,8 @@ impl<K,V> Map<K,V>
     #[allow(dead_code)] // Used in test cases, but compiler still warns about it
     pub(crate) fn internal_size_bytes(&self) -> usize
     {
-	self.0.capacity() * std::mem::size_of::<Page<K,V>>()
-	//self.0.iter().map(std::mem::size_of_val).sum::<usize>()
+	self.0.capacity() * core::mem::size_of::<Page<K,V>>()
+	//self.0.iter().map(core::mem::size_of_val).sum::<usize>()
     }
 }
 
@@ -432,7 +435,7 @@ where K: Collapse
 	{
 	    match page.search_mut(&key) {
 		Some((ref ok, ov)) if ok.eq(&key) => {
-		    return Some(std::mem::replace(ov, value));
+		    return Some(core::mem::replace(ov, value));
 		},
 		empty @ None => {
 		    return empty.replace((key, value))
@@ -484,7 +487,7 @@ impl<K: Collapse, V> IntoIterator for Map<K,V>
     }
 }
 
-impl<K: Collapse, V> std::iter::Extend<(K,V)> for Map<K,V>
+impl<K: Collapse, V> core::iter::Extend<(K,V)> for Map<K,V>
 {
     fn extend<T: IntoIterator<Item = (K,V)>>(&mut self, iter: T) {
 	// we can probably optimise this better, right?
@@ -495,8 +498,8 @@ impl<K: Collapse, V> std::iter::Extend<(K,V)> for Map<K,V>
     }
 }
 
-use std::hash::{Hash, Hasher,};
-use std::ops::{Index, IndexMut};
+use core::hash::{Hash, Hasher,};
+use core::ops::{Index, IndexMut};
 
 impl<T: ?Sized + Hash + Eq> Collapse for T
 {
