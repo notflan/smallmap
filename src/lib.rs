@@ -26,7 +26,7 @@
 //!
 //! ###  When not to use
 //! Generally don't use this if your key would have a lot of collisions being represents in 8 bits, otherwise it might be a faster alternative to hash-based maps. You should check yourself before sticking with this crate instead of `std`'s vectorised map implementations.
-#![cfg_attr(not(test), no_std)]
+#![cfg_attr(any(not(test), not(feature = "std")), no_std)]
 #![cfg_attr(nightly, feature(test))] 
 #![cfg_attr(nightly, feature(drain_filter))] 
 #![cfg_attr(nightly, feature(never_type))] 
