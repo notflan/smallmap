@@ -31,7 +31,7 @@
 #![cfg_attr(nightly, feature(drain_filter))] 
 #![cfg_attr(nightly, feature(never_type))] 
 
-#[cfg(nightly)] extern crate test;
+#[cfg(all(nightly, test))] extern crate test;
 extern crate alloc;
 
 const MAX: usize = 256;
