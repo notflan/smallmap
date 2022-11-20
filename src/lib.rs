@@ -213,9 +213,42 @@ where K: Collapse
 
 /// A small hashtable-like map with byte sized key indecies.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-#[cfg_attr(feature="serde", derive(serde::Serialize, serde::Deserialize))]
 // TODO: Replace with `SmallVec<[Page<TKey, TValue>; 1]>` when feature that adds `smallvec` is enabled (this will allocate the first page on the stack, and the rest on the heap.
 pub struct Map<TKey, TValue>(Vec<Page<TKey,TValue>>);
+
+#[derive(Default)]
+struct MapVisitor<TKey, TValue> {
+	_pd: core::marker::PhantomData<(TKey, TValue)>,
+}
+
+/// Just taken from [serde.rs' examples](https://serde.rs/deserialize-map.html)
+#[cfg(feature = "serde")]
+impl<'de, TKey, TValue> serde::de::Visitor<'de> for MapVisitor<TKey, TValue> where TKey: Collapse + serde::Deserialize<'de>, TValue: serde::Deserialize<'de> {
+	type Value = Map<TKey, TValue>;
+
+	fn expecting(&self, formatter: &mut core::fmt::Formatter) -> core::fmt::Result {
+		formatter.write_str("A map")
+	}
+
+	fn visit_map<A>(self, mut access: A) -> Result<Self::Value, A::Error> where A: serde::de::MapAccess<'de> {
+		let mut map = Map::with_capacity(access.size_hint().unwrap_or(0));
+		while let Some((key, value)) = access.next_entry()? {
+			map.insert(key, value);
+		}
+		Ok(map)
+	}
+}
+
+#[cfg(feature = "serde")]
+impl<TKey, TValue> serde::Serialize for Map<TKey, TValue> where TKey: Collapse + serde::Serialize, TValue: serde::Serialize {
+	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: serde::Serializer {
+		let mut m = serializer.serialize_map(Some(self.len()))?;
+		for (k, v) in self.iter() {
+			m.serialize_entry(k, v)?;
+		}
+		m.end()
+	}
+}
 
 impl<K,V> Map<K,V>
 {
@@ -500,6 +533,8 @@ impl<K: Collapse, V> core::iter::Extend<(K,V)> for Map<K,V>
 
 use core::hash::{Hash, Hasher,};
 use core::ops::{Index, IndexMut};
+#[cfg(feature = "serde")]
+use serde::ser::SerializeMap;
 
 impl<T: ?Sized + Hash + Eq> Collapse for T
 {
