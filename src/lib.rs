@@ -216,9 +216,16 @@ where K: Collapse
 // TODO: Replace with `SmallVec<[Page<TKey, TValue>; 1]>` when feature that adds `smallvec` is enabled (this will allocate the first page on the stack, and the rest on the heap.
 pub struct Map<TKey, TValue>(Vec<Page<TKey,TValue>>);
 
-#[derive(Default)]
+#[cfg(feature = "serde")]
 struct MapVisitor<TKey, TValue> {
 	_pd: core::marker::PhantomData<(TKey, TValue)>,
+}
+
+#[cfg(feature = "serde")]
+impl<'de, TKey, TValue> serde::de::Deserialize<'de> for Map<TKey, TValue> where TKey: Collapse + serde::Deserialize<'de>, TValue: serde::Deserialize<'de> {
+	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: serde::Deserializer<'de> {
+		deserializer.deserialize_map(MapVisitor { _pd: core::marker::PhantomData::default() })
+	}
 }
 
 /// Just taken from [serde.rs' examples](https://serde.rs/deserialize-map.html)
@@ -231,7 +238,7 @@ impl<'de, TKey, TValue> serde::de::Visitor<'de> for MapVisitor<TKey, TValue> whe
 	}
 
 	fn visit_map<A>(self, mut access: A) -> Result<Self::Value, A::Error> where A: serde::de::MapAccess<'de> {
-		let mut map = Map::with_capacity(access.size_hint().unwrap_or(0));
+		let mut map = Map::with_capacity(access.size_hint().unwrap_or(1));
 		while let Some((key, value)) = access.next_entry()? {
 			map.insert(key, value);
 		}
