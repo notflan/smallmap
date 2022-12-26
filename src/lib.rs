@@ -26,16 +26,19 @@
 //!
 //! ###  When not to use
 //! Generally don't use this if your key would have a lot of collisions being represents in 8 bits, otherwise it might be a faster alternative to hash-based maps. You should check yourself before sticking with this crate instead of `std`'s vectorised map implementations.
-
+#![cfg_attr(any(not(test), not(feature = "std")), no_std)]
 #![cfg_attr(nightly, feature(test))] 
 #![cfg_attr(nightly, feature(drain_filter))] 
 #![cfg_attr(nightly, feature(never_type))] 
 
-#[cfg(nightly)] extern crate test;
+#[cfg(all(nightly, test))] extern crate test;
+extern crate alloc;
 
 const MAX: usize = 256;
 
-use std::borrow::Borrow;
+use alloc::vec;
+use alloc::vec::Vec;
+use core::borrow::Borrow;
 
 pub mod iter;
 use iter::*;
@@ -138,7 +141,7 @@ where K: Collapse
     /// This is a count that iterates over all slots, if possible store it in a temporary instead of re-calling it many times.
     pub fn len(&self) -> usize
     {
-	self.0.iter().map(Option::as_ref).filter_map(std::convert::identity).count()
+	self.0.iter().map(Option::as_ref).filter_map(core::convert::identity).count()
     }
 
     /// An iterator over all entries currently in this page
@@ -166,11 +169,11 @@ where K: Collapse
 
     fn replace(&mut self, k: K, v: V) -> Option<(K,V)>
     {
-	std::mem::replace(&mut self.0[usize::from(k.collapse())], Some((k,v)))
+	core::mem::replace(&mut self.0[usize::from(k.collapse())], Some((k,v)))
     }
 }
 
-impl<K: Collapse, V> std::iter::FromIterator<(K, V)> for Map<K,V>
+impl<K: Collapse, V> core::iter::FromIterator<(K, V)> for Map<K,V>
 {
     fn from_iter<I: IntoIterator<Item=(K, V)>>(iter: I) -> Self
     {
@@ -210,9 +213,49 @@ where K: Collapse
 
 /// A small hashtable-like map with byte sized key indecies.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-#[cfg_attr(feature="serde", derive(serde::Serialize, serde::Deserialize))]
 // TODO: Replace with `SmallVec<[Page<TKey, TValue>; 1]>` when feature that adds `smallvec` is enabled (this will allocate the first page on the stack, and the rest on the heap.
 pub struct Map<TKey, TValue>(Vec<Page<TKey,TValue>>);
+
+#[cfg(feature = "serde")]
+struct MapVisitor<TKey, TValue> {
+	_pd: core::marker::PhantomData<(TKey, TValue)>,
+}
+
+#[cfg(feature = "serde")]
+impl<'de, TKey, TValue> serde::de::Deserialize<'de> for Map<TKey, TValue> where TKey: Collapse + serde::Deserialize<'de>, TValue: serde::Deserialize<'de> {
+	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: serde::Deserializer<'de> {
+		deserializer.deserialize_map(MapVisitor { _pd: core::marker::PhantomData::default() })
+	}
+}
+
+/// Just taken from [serde.rs' examples](https://serde.rs/deserialize-map.html)
+#[cfg(feature = "serde")]
+impl<'de, TKey, TValue> serde::de::Visitor<'de> for MapVisitor<TKey, TValue> where TKey: Collapse + serde::Deserialize<'de>, TValue: serde::Deserialize<'de> {
+	type Value = Map<TKey, TValue>;
+
+	fn expecting(&self, formatter: &mut core::fmt::Formatter) -> core::fmt::Result {
+		formatter.write_str("A map")
+	}
+
+	fn visit_map<A>(self, mut access: A) -> Result<Self::Value, A::Error> where A: serde::de::MapAccess<'de> {
+		let mut map = Map::with_capacity(access.size_hint().unwrap_or(1));
+		while let Some((key, value)) = access.next_entry()? {
+			map.insert(key, value);
+		}
+		Ok(map)
+	}
+}
+
+#[cfg(feature = "serde")]
+impl<TKey, TValue> serde::Serialize for Map<TKey, TValue> where TKey: Collapse + serde::Serialize, TValue: serde::Serialize {
+	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: serde::Serializer {
+		let mut m = serializer.serialize_map(Some(self.len()))?;
+		for (k, v) in self.iter() {
+			m.serialize_entry(k, v)?;
+		}
+		m.end()
+	}
+}
 
 impl<K,V> Map<K,V>
 {
@@ -221,8 +264,8 @@ impl<K,V> Map<K,V>
     #[allow(dead_code)] // Used in test cases, but compiler still warns about it
     pub(crate) fn internal_size_bytes(&self) -> usize
     {
-	self.0.capacity() * std::mem::size_of::<Page<K,V>>()
-	//self.0.iter().map(std::mem::size_of_val).sum::<usize>()
+	self.0.capacity() * core::mem::size_of::<Page<K,V>>()
+	//self.0.iter().map(core::mem::size_of_val).sum::<usize>()
     }
 }
 
@@ -432,7 +475,7 @@ where K: Collapse
 	{
 	    match page.search_mut(&key) {
 		Some((ref ok, ov)) if ok.eq(&key) => {
-		    return Some(std::mem::replace(ov, value));
+		    return Some(core::mem::replace(ov, value));
 		},
 		empty @ None => {
 		    return empty.replace((key, value))
@@ -484,7 +527,7 @@ impl<K: Collapse, V> IntoIterator for Map<K,V>
     }
 }
 
-impl<K: Collapse, V> std::iter::Extend<(K,V)> for Map<K,V>
+impl<K: Collapse, V> core::iter::Extend<(K,V)> for Map<K,V>
 {
     fn extend<T: IntoIterator<Item = (K,V)>>(&mut self, iter: T) {
 	// we can probably optimise this better, right?
@@ -495,8 +538,10 @@ impl<K: Collapse, V> std::iter::Extend<(K,V)> for Map<K,V>
     }
 }
 
-use std::hash::{Hash, Hasher,};
-use std::ops::{Index, IndexMut};
+use core::hash::{Hash, Hasher,};
+use core::ops::{Index, IndexMut};
+#[cfg(feature = "serde")]
+use serde::ser::SerializeMap;
 
 impl<T: ?Sized + Hash + Eq> Collapse for T
 {

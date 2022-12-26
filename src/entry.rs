@@ -33,7 +33,7 @@ where K: Collapse
     /// Replace the held value with another, yielding the old one
     pub fn insert(&mut self, value: V) -> V
     {
-	std::mem::replace(&mut self.0.as_mut().unwrap().1, value)
+	core::mem::replace(&mut self.0.as_mut().unwrap().1, value)
     }
     /// Remove this entry from the `Map`, yielding the removed value
     pub fn remove(self) -> V

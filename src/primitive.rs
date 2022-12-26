@@ -6,7 +6,7 @@
 //!
 //! If/when Rust gets specialisation, this will be unneeded.
 use super::*;
-use std::num::*;
+use core::num::*;
 
 /// Sealed trait allowing for wrapping primitive types with a more efficient implemntation for the `Collapse` trait.
 /// This should not be used for much directly, instead use the newtype shim `Primitive<T>`.

@@ -12,12 +12,12 @@ use super::*;
 /// A set of only non-zero bytes.
 ///
 /// This type is entirely space efficient and will only ever allocate `256` bytes of memory.
-pub type NonZeroByteSet = Set<std::num::NonZeroU8>;
+pub type NonZeroByteSet = Set<core::num::NonZeroU8>;
 
 /// A set of non-zero signed 8-bit integers.
 ///
 /// This type is entirely space efficient and will only ever allocate `256` bytes of memory.
-pub type NonZeroI8Set = Set<std::num::NonZeroI8>;
+pub type NonZeroI8Set = Set<core::num::NonZeroI8>;
 
 /// A set of non-zero unsigned 8-bit integers.
 ///

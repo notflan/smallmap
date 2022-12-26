@@ -1,6 +1,6 @@
 //! Because we can't #derive big arrays on stable smh
 use super::*;
-use std::{
+use core::{
     fmt::{self, Debug,},
     hash,
 };
@@ -49,7 +49,7 @@ impl<K: hash::Hash, V: hash::Hash> hash::Hash for Page<K,V> {
 #[cfg(feature="serde")]
 const _: () = {
     use serde::*;
-    use std::marker::PhantomData;
+    use core::marker::PhantomData;
     
     impl<K,V> serde::Serialize for Page<K,V>
     where K:Serialize, V: Serialize
@@ -93,7 +93,7 @@ const _: () = {
 		Ok(Page(elems))
 	    } else {
 		use serde::de::Error;
-		Err(A::Error::custom(format!("Expected {} elemts, got {}", MAX, i)))
+		Err(A::Error::custom(alloc::format!("Expected {} elemts, got {}", MAX, i)))
 	    }
 	}
     }

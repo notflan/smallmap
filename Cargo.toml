@@ -17,10 +17,12 @@ panic = "unwind"
 strip=true
 
 [features]
+default = ["std"]
+std = []
 # TODO: maybe add an FFI feature, to allow C projects to use it? idk if that's worth it really...
 
 [dependencies]
-serde = {version = "1.0.116", features = ["derive"], optional = true}
+serde = {version = "1.0.116", default-features = false, features = ["derive", "alloc"], optional = true}
 # TODO: optional smallvec feature: instead of heap-allocating the first page, it can be placed on the stack.
 
 
