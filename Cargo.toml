@@ -22,12 +22,12 @@ std = []
 # TODO: maybe add an FFI feature, to allow C projects to use it? idk if that's worth it really...
 
 [dependencies]
-serde = {version = "1.0.116", default-features = false, features = ["derive", "alloc"], optional = true}
+serde = {version = "1.0.163", default-features = false, features = ["derive", "alloc"], optional = true}
 # TODO: optional smallvec feature: instead of heap-allocating the first page, it can be placed on the stack.
 
 
 [dev-dependencies]
-serde_json = "1.0.59"
+serde_json = "1.0.96"
 
 [build-dependencies]
-rustc_version = "0.2"
+rustc_version = "0.4"
