@@ -28,7 +28,6 @@
 //! Generally don't use this if your key would have a lot of collisions being represents in 8 bits, otherwise it might be a faster alternative to hash-based maps. You should check yourself before sticking with this crate instead of `std`'s vectorised map implementations.
 #![cfg_attr(any(not(test), not(feature = "std")), no_std)]
 #![cfg_attr(nightly, feature(test))] 
-#![cfg_attr(nightly, feature(drain_filter))] 
 #![cfg_attr(nightly, feature(never_type))] 
 
 #[cfg(all(nightly, test))] extern crate test;
@@ -310,19 +309,7 @@ where K: Collapse
     /// Remove all empty pages from this instance.
     pub fn clean(&mut self)
     {
-	#[cfg(nightly)] 
-	self.0.drain_filter(|x| x.len() <1);
-	#[cfg(not(nightly))]
-	{
-	    let mut i = 0;
-	    while i != self.0.len() {
-		if self.0[i].len() <1 {
-		    self.0.remove(i);
-		} else {
-		    i += 1;
-		}
-	    }
-	}
+	self.0.retain(|x| x.len() >= 1);
     }
 
     /// The number of entries currently in this map
